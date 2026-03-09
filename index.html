@@ -732,7 +732,7 @@
   </div>
 
   <!-- Row 4: Results (clickable) -->
-  <div class="row" style="grid-template-columns: 1fr 1fr;">
+  <div class="row" style="grid-template-columns: 1fr 1fr 1fr;">
 
     <div class="card card-clickable" onclick="openImageModal('sim')" title="Click to view results chart">
       <span class="view-badge">🔍 View Chart</span>
@@ -848,6 +848,18 @@
 
   </div>
 
+  <div class="card card-clickable" onclick="openImageModal('real')" title="Click to view hardware results">
+  <span class="view-badge">🔍 View Chart</span>
+  <h2>Hardware Results</h2>
+  <h3>Real Robot Validation — 4–7 Hz Band Energy</h3>
+
+  
+
+  <div class="result-legend">
+    <div class="legend-dot"><span class="dot" style="background:#94a3b8"></span>Normal IK</div>
+    <div class="legend-dot"><span class="dot" style="background:#3b82f6"></span>Optimized</div>
+  </div>
+</div>
 
   <!-- ══════════════ VIDEO MODAL ══════════════ -->
   <div class="modal-overlay" id="videoModal" onclick="handleOverlayClick(event, 'videoModal')">
@@ -888,59 +900,85 @@
     </div>
   </div>
 
-
-  <!-- ══════════════ IMAGE MODAL – SIMULATED ══════════════ -->
-  <div class="modal-overlay" id="simModal" onclick="handleOverlayClick(event, 'simModal')">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-title">
-          📊 Simulated Results
-          <span class="modal-title-badge">Vibration Energy</span>
-        </div>
-        <button class="modal-close" onclick="closeModal('simModal')">✕</button>
+<!-- ══════════════ IMAGE MODAL – SIMULATED ══════════════ -->
+<div class="modal-overlay" id="simModal" onclick="handleOverlayClick(event, 'simModal')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">
+        📊 Simulated Results
+        <span class="modal-title-badge">Vibration Energy</span>
       </div>
-      <div class="modal-body">
-        <div class="image-container">
-          <div class="image-placeholder">
-            <img src="2.png" alt="Simulated Results Chart" />   
-          </div>
+      <button class="modal-close" onclick="closeModal('simModal')">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="image-container">
+        <div class="image-placeholder">
+          <img src="2.png" alt="Simulated Results Chart"/>
         </div>
-        <div class="modal-stats">
-          <div class="modal-stat"><div class="modal-stat-val">~61%</div><div class="modal-stat-lbl">Avg. Reduction TC1</div></div>
-          <div class="modal-stat"><div class="modal-stat-val">~65%</div><div class="modal-stat-lbl">Avg. Reduction TC2</div></div>
-          <div class="modal-stat"><div class="modal-stat-val">~57%</div><div class="modal-stat-lbl">Avg. Reduction TC3</div></div>
-          <div class="modal-stat"><div class="modal-stat-val">~60%</div><div class="modal-stat-lbl">Avg. Reduction TC4</div></div>
+      </div>
+
+      <div class="modal-stats">
+        <div class="modal-stat"><div class="modal-stat-val">~61%</div><div class="modal-stat-lbl">Avg. Reduction TC1</div></div>
+        <div class="modal-stat"><div class="modal-stat-val">~65%</div><div class="modal-stat-lbl">Avg. Reduction TC2</div></div>
+        <div class="modal-stat"><div class="modal-stat-val">~57%</div><div class="modal-stat-lbl">Avg. Reduction TC3</div></div>
+        <div class="modal-stat"><div class="modal-stat-val">~60%</div><div class="modal-stat-lbl">Avg. Reduction TC4</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════ IMAGE MODAL – HARDWARE VALIDATION ══════════════ -->
+<div class="modal-overlay" id="hwModal" onclick="handleOverlayClick(event, 'hwModal')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">
+        🔬 Simulated Validation Results
+        <span class="modal-title-badge">4–7 Hz Band Energy</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('hwModal')">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="image-container">
+        <div class="image-placeholder">
+          <img src="1.png" alt="Simulated Results Chart"/>
+        </div>
+      </div>
+
+      <div class="modal-stats">
+        <div class="modal-stat"><div class="modal-stat-val">~55%</div><div class="modal-stat-lbl">Avg. Reduction TC1</div></div>
+        <div class="modal-stat"><div class="modal-stat-val">~59%</div><div class="modal-stat-lbl">Avg. Reduction TC2</div></div>
+        <div class="modal-stat"><div class="modal-stat-val">~50%</div><div class="modal-stat-lbl">Avg. Reduction TC3</div></div>
+        <div class="modal-stat"><div class="modal-stat-val">~51%</div><div class="modal-stat-lbl">Avg. Reduction TC4</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════ IMAGE MODAL – PROPER HARDWARE ══════════════ -->
+<div class="modal-overlay" id="hardwareModal" onclick="handleOverlayClick(event, 'hardwareModal')">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">
+        🔬 Proper Hardware Results
+        <span class="modal-title-badge">4–7 Hz Band Energy</span>
+      </div>
+      <button class="modal-close" onclick="closeModal('hardwareModal')">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="image-container">
+        <div class="image-placeholder">
+          <img src="image3.jpeg" alt="Hardware Results"/>
         </div>
       </div>
     </div>
   </div>
-
-
-  <!-- ══════════════ IMAGE MODAL – HARDWARE ══════════════ -->
-  <div class="modal-overlay" id="hwModal" onclick="handleOverlayClick(event, 'hwModal')">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-title">
-          🔬 Hardware Validation Results
-          <span class="modal-title-badge">4–7 Hz Band Energy</span>
-        </div>
-        <button class="modal-close" onclick="closeModal('hwModal')">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="image-container">
-          <div class="image-placeholder">
-            <img src="1.png" alt="Simulated Results Chart" />   
-          </div>
-        </div>
-        <div class="modal-stats">
-          <div class="modal-stat"><div class="modal-stat-val">~55%</div><div class="modal-stat-lbl">Avg. Reduction TC1</div></div>
-          <div class="modal-stat"><div class="modal-stat-val">~59%</div><div class="modal-stat-lbl">Avg. Reduction TC2</div></div>
-          <div class="modal-stat"><div class="modal-stat-val">~50%</div><div class="modal-stat-lbl">Avg. Reduction TC3</div></div>
-          <div class="modal-stat"><div class="modal-stat-val">~51%</div><div class="modal-stat-lbl">Avg. Reduction TC4</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
+  
 
 
   <script>
@@ -950,7 +988,12 @@
     }
 
     function openImageModal(type) {
-      const id = type === 'sim' ? 'simModal' : 'hwModal';
+      let id;
+
+      if (type === 'sim') id = 'simModal';
+      else if (type === 'hw') id = 'hwModal';
+      else if (type === 'real') id = 'hardwareModal';
+
       document.getElementById(id).classList.add('active');
       document.body.style.overflow = 'hidden';
     }
@@ -969,10 +1012,10 @@
 
     // Escape key closes any open modal
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        ['videoModal', 'simModal', 'hwModal'].forEach(closeModal);
-      }
-    });
+  if (e.key === 'Escape') {
+    ['videoModal', 'simModal', 'hwModal', 'hardwareModal'].forEach(closeModal);
+  }
+  });
   </script>
 
 </body>
