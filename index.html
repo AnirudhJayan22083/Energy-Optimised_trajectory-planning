@@ -589,6 +589,8 @@
       .modal-stats { grid-template-columns: 1fr 1fr; }
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
 
@@ -627,7 +629,8 @@
         <li>Forms the input to the Fourier shaping stage</li>
       </ul>
     </div>
-    <div class="card">
+    <div class="card card-clickable" onclick="openModal('ikModal')" title="Click to view IK equations">
+      <span class="view-badge">📐 View Equations</span>
       <h2>Methodology</h2>
       <h3>📐 Inverse Kinematics</h3>
       <p>Computes the required joint angles to achieve a desired end-effector position and orientation. Numerical IK is used as the unoptimized baseline.</p>
@@ -861,6 +864,63 @@
   </div>
 </div>
 
+  <!-- ══════════════ IK EQUATIONS MODAL ══════════════ -->
+  <div class="modal-overlay" id="ikModal" onclick="handleOverlayClick(event, 'ikModal')">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          📐 Inverse Kinematics
+          <span class="modal-title-badge">Optimization Equations</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('ikModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex; flex-direction:column; gap:1.1rem;">
+
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1.2rem 1.4rem;">
+            <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:#3b82f6; margin-bottom:0.5rem;">Equation 1 — Trajectory Cost</div>
+            <div style="font-size:0.82rem; color:#475569; margin-bottom:0.65rem; line-height:1.6;">
+              Penalises joint-space velocity and acceleration — minimising this produces smooth, low-jerk motion profiles.
+            </div>
+            <div style="text-align:center; font-size:1rem; padding:0.4rem 0;">
+              \( J_{traj} = \alpha \displaystyle\sum_{t} \|\dot{q}(t)\|^2 + \beta \displaystyle\sum_{t} \|\ddot{q}(t)\|^2 \)
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:0.75rem; flex-wrap:wrap;">
+              <span style="background:#eff6ff; color:#3b82f6; font-size:0.7rem; padding:0.2rem 0.55rem; border-radius:4px; font-weight:500;">\(\alpha\) — velocity weight</span>
+              <span style="background:#eff6ff; color:#3b82f6; font-size:0.7rem; padding:0.2rem 0.55rem; border-radius:4px; font-weight:500;">\(\beta\) — acceleration weight</span>
+              <span style="background:#eff6ff; color:#3b82f6; font-size:0.7rem; padding:0.2rem 0.55rem; border-radius:4px; font-weight:500;">\(\dot{q}(t)\) — joint velocity</span>
+            </div>
+          </div>
+
+          <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:1.2rem 1.4rem;">
+            <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:#3b82f6; margin-bottom:0.5rem;">Equation 2 — Fourier Transform Cost</div>
+            <div style="font-size:0.82rem; color:#475569; margin-bottom:0.65rem; line-height:1.6;">
+              Penalises frequency-domain energy within the target vibration band (4–7 Hz), directly suppressing resonant frequencies in the trajectory.
+            </div>
+            <div style="text-align:center; font-size:1rem; padding:0.4rem 0;">
+              \( J_{FT} = \gamma \displaystyle\sum_{f} \|A(f)\|^2 \)
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:0.75rem; flex-wrap:wrap;">
+              <span style="background:#eff6ff; color:#3b82f6; font-size:0.7rem; padding:0.2rem 0.55rem; border-radius:4px; font-weight:500;">\(\gamma\) — frequency weight</span>
+              <span style="background:#eff6ff; color:#3b82f6; font-size:0.7rem; padding:0.2rem 0.55rem; border-radius:4px; font-weight:500;">\(A(f)\) — FFT amplitude at freq \(f\)</span>
+            </div>
+          </div>
+
+          <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:1.2rem 1.4rem;">
+            <div style="font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:#2563eb; margin-bottom:0.5rem;">Equation 3 — Combined Objective</div>
+            <div style="font-size:0.82rem; color:#475569; margin-bottom:0.65rem; line-height:1.6;">
+              The total cost function combines trajectory smoothness and spectral energy suppression. Nelder–Mead minimises this jointly over joint-angle parameters.
+            </div>
+            <div style="text-align:center; font-size:1rem; padding:0.4rem 0; font-weight:600; color:#1e40af;">
+              \( \text{Minimize } J_{traj} + J_{FT} \)
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ══════════════ VIDEO MODAL ══════════════ -->
   <div class="modal-overlay" id="videoModal" onclick="handleOverlayClick(event, 'videoModal')">
     <div class="modal-card" style="max-width: 1100px;">
@@ -982,6 +1042,13 @@
 
 
   <script>
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+      document.body.style.overflow = 'hidden';
+      // Re-typeset MathJax if available
+      if (window.MathJax) MathJax.typesetPromise([document.getElementById(id)]);
+    }
+
     function openVideoModal() {
       document.getElementById('videoModal').classList.add('active');
       document.body.style.overflow = 'hidden';
@@ -1013,7 +1080,7 @@
     // Escape key closes any open modal
     document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    ['videoModal', 'simModal', 'hwModal', 'hardwareModal'].forEach(closeModal);
+    ['ikModal', 'videoModal', 'simModal', 'hwModal', 'hardwareModal'].forEach(closeModal);
   }
   });
   </script>
