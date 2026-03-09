@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Robot Manipulator Optimization</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f7fa;
+      color: #1a1a2e;
+      padding: 1.5rem 2rem;
+    }
+
+    .header {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.25rem;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+
+    .header-left h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: #3b82f6;
+      margin-bottom: 0.3rem;
+    }
+
+    .header-left p {
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .team {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 0.28rem 0.7rem;
+      font-size: 0.75rem;
+      color: #475569;
+      white-space: nowrap;
+    }
+
+    /* ── Rows ── */
+    .row {
+      display: grid;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .row-2 { grid-template-columns: 1fr 1fr; }
+    .row-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+    .row-5 { grid-template-columns: 2fr 1.2fr 1.2fr 1.2fr 1.2fr; }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 1.4rem 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .card h2 {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: #3b82f6;
+      margin-bottom: 0.45rem;
+    }
+
+    .card h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+    }
+
+    .card p {
+      font-size: 0.83rem;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .card ul {
+      list-style: none;
+      margin-top: 0.4rem;
+    }
+
+    .card ul li {
+      font-size: 0.83rem;
+      color: #64748b;
+      line-height: 1.6;
+      padding: 0.18rem 0 0.18rem 1rem;
+      position: relative;
+    }
+
+    .card ul li::before {
+      content: '•';
+      position: absolute; left: 0;
+      color: #3b82f6;
+    }
+
+    /* Steps row */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .step {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.6rem 0.4rem;
+      text-align: center;
+      font-size: 0.75rem;
+      color: #475569;
+    }
+
+    .step-icon { font-size: 1.1rem; margin-bottom: 0.15rem; }
+
+    /* Tags */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.7rem;
+    }
+
+    .tag {
+      background: #eff6ff;
+      color: #3b82f6;
+      font-size: 0.7rem;
+      padding: 0.18rem 0.55rem;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    /* Stat card */
+    .stat {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #3b82f6;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: #64748b;
+      text-align: center;
+    }
+
+    /* Pipeline steps for FFT */
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .pipe-step {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.82rem;
+      color: #475569;
+    }
+
+    .pipe-num {
+      background: #eff6ff;
+      color: #3b82f6;
+      font-size: 0.65rem;
+      font-weight: 700;
+      width: 20px; height: 20px;
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Results bar chart */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+      margin-top: 0.6rem;
+    }
+
+    .result-case {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+
+    .result-case-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.6rem;
+    }
+
+    .bar-row {
+      margin-bottom: 0.5rem;
+    }
+
+    .bar-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-bottom: 0.2rem;
+    }
+
+    .bar-track {
+      background: #e2e8f0;
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .bar-ik   { background: #94a3b8; }
+    .bar-opt  { background: #3b82f6; }
+
+    .result-legend {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .legend-dot {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.7rem;
+      color: #64748b;
+    }
+
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Simulation Button ── */
+    .sim-btn-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .sim-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 0.72rem 1.8rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(59,130,246,0.38);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      letter-spacing: 0.01em;
+    }
+
+    .sim-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 20px rgba(59,130,246,0.48);
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    }
+
+    .sim-btn:active { transform: translateY(0); }
+
+    .sim-btn-icon {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    /* ── Clickable Results Cards ── */
+    .card-clickable {
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      position: relative;
+    }
+
+    .card-clickable:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(59,130,246,0.15);
+      border-color: #93c5fd;
+    }
+
+    .card-clickable:active { transform: translateY(0); }
+
+    .view-badge {
+      position: absolute;
+      top: 1rem; right: 1rem;
+      background: #eff6ff;
+      color: #3b82f6;
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.22rem 0.6rem;
+      border-radius: 20px;
+      border: 1px solid #bfdbfe;
+      display: flex; align-items: center; gap: 0.3rem;
+      pointer-events: none;
+    }
+
+    /* ── Modal Overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 0;
+      max-width: 820px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: hidden;
+      position: relative;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.4rem;
+      border-bottom: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .modal-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #1e293b;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .modal-title-badge {
+      background: #eff6ff;
+      color: #3b82f6;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.18rem 0.5rem;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    .modal-close {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      cursor: pointer;
+      color: #64748b;
+      transition: background 0.12s, color 0.12s;
+      flex-shrink: 0;
+    }
+
+    .modal-close:hover { background: #fee2e2; color: #ef4444; border-color: #fca5a5; }
+
+    .modal-body {
+      padding: 1.4rem;
+    }
+
+    /* Video modal */
+    .video-container {
+      position: relative;
+      width: 100%;
+      background: #0f172a;
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .video-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .video-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: #94a3b8;
+      width: 100%;
+      height: 100%;
+      min-height: 300px;
+    }
+
+    .video-placeholder-icon {
+      width: 64px; height: 64px;
+      background: rgba(59,130,246,0.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      border: 2px solid rgba(59,130,246,0.3);
+    }
+
+    .video-placeholder p {
+      font-size: 0.85rem;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 260px;
+    }
+
+    .video-placeholder small {
+      font-size: 0.72rem;
+      color: #64748b;
+    }
+
+    .video-meta {
+      display: flex;
+      gap: 0.6rem;
+      margin-top: 0.9rem;
+      flex-wrap: wrap;
+    }
+
+    .video-meta-tag {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.72rem;
+      color: #475569;
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+
+    /* Image modal */
+    .image-container {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 340px;
+    }
+
+    .image-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: #94a3b8;
+      padding: 2rem;
+      width: 100%;
+      min-height: 340px;
+    }
+
+    .image-placeholder-icon {
+      width: 64px; height: 64px;
+      background: rgba(59,130,246,0.1);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.8rem;
+      border: 2px dashed rgba(59,130,246,0.3);
+    }
+
+    .image-placeholder p {
+      font-size: 0.85rem;
+      text-align: center;
+      line-height: 1.5;
+      max-width: 280px;
+      color: #64748b;
+    }
+
+    .image-placeholder .replace-hint {
+      background: #eff6ff;
+      color: #3b82f6;
+      font-size: 0.72rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      border: 1px solid #bfdbfe;
+      font-weight: 500;
+    }
+
+    .image-container img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 10px;
+    }
+
+    /* Result stats row in image modal */
+    .modal-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin-top: 0.9rem;
+    }
+
+    .modal-stat {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0.6rem;
+      text-align: center;
+    }
+
+    .modal-stat-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #3b82f6;
+    }
+
+    .modal-stat-lbl {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-top: 0.1rem;
+    }
+
+    @media (max-width: 900px) {
+      .row-3, .row-4, .row-5 { grid-template-columns: 1fr 1fr; }
+      .row-2 { grid-template-columns: 1fr; }
+      .header { flex-direction: column; }
+      .team { justify-content: flex-start; }
+      .results-grid { grid-template-columns: 1fr 1fr; }
+      .modal-stats { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <h1>Optimization in Energy Usage of Manipulator (FFT)</h1>
+      <p>Group A-2 · CB.SC.U4AIE24 · 4-DOF Robotic Manipulator</p>
+    </div>
+    <div class="team">
+      <span class="chip">Anirudh Jayan – CB.SC.U4AIE24007</span>
+      <span class="chip">Sarvesh Ram Kumar – CB.SC.U4AIE24048</span>
+      <span class="chip">Aravind S Harilal – CB.SC.U4AIE24008</span>
+      <span class="chip">Adhwaidh – CB.SC.U4AIE24003</span>
+    </div>
+  </div>
+
+  <!-- Simulation Button -->
+  <div class="sim-btn-wrap">
+    <button class="sim-btn" onclick="openVideoModal()">
+      <span class="sim-btn-icon">▶</span>
+      Real world Implementation
+    </button>
+  </div>
+
+  <!-- Row 1: Methodology – 3 detailed cards -->
+  <div class="row row-3">
+    <div class="card">
+      <h2>Methodology</h2>
+      <h3>🗺 Trajectory Planning</h3>
+      <p>Defines the motion path for the manipulator end-effector in both joint space and Cartesian space. Smooth, continuous trajectories reduce mechanical jerks and stress on joints.</p>
+      <ul>
+        <li>Joint-space interpolation between waypoints</li>
+        <li>Velocity and acceleration profiles are constrained</li>
+        <li>Smooth paths reduce vibration at source</li>
+        <li>Forms the input to the Fourier shaping stage</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Methodology</h2>
+      <h3>📐 Inverse Kinematics</h3>
+      <p>Computes the required joint angles to achieve a desired end-effector position and orientation. Numerical IK is used as the unoptimized baseline.</p>
+      <ul>
+        <li>Maps Cartesian goals → joint angle solutions</li>
+        <li>Numerical solver handles 4-DOF configuration</li>
+        <li>Baseline IK results collected for 4 test cases</li>
+        <li>Optimized algorithm compared directly against it</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Methodology</h2>
+      <h3>〜 Fourier Transforms</h3>
+      <p>FFT decomposes trajectory signals into frequency components. Fourier shaping modifies joint trajectories in the frequency domain to suppress dominant vibration frequencies.</p>
+      <ul>
+        <li>Trajectory expressed as sum of sinusoidal components</li>
+        <li>Target suppression band: <strong>4–7 Hz</strong></li>
+        <li>Nonlinear sine terms make cost function non-quadratic</li>
+        <li>Modified trajectory transformed back via IFFT</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Row 2: Nelder-Mead + Why Not QP + Why Not ADMM -->
+  <div class="row row-3">
+    <div class="card">
+      <h2>Optimization Technique</h2>
+      <h3>Nelder–Mead Simplex Method</h3>
+      <p>Derivative-free direct search — ideal for nonlinear, non-convex objectives. For 4-DOF, builds a simplex of <strong>5 points</strong> and iteratively reshapes until convergence.</p>
+      <div class="steps">
+        <div class="step"><div class="step-icon">↔️</div>Reflection</div>
+        <div class="step"><div class="step-icon">↗️</div>Expansion</div>
+        <div class="step"><div class="step-icon">↙️</div>Contraction</div>
+        <div class="step"><div class="step-icon">⬛</div>Shrink</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Why Not QP?</h2>
+      <h3>Quadratic Programming Violated</h3>
+      <ul>
+        <li>QP requires a strictly quadratic objective</li>
+        <li>Our cost includes nonlinear sine terms</li>
+        <li>Numerical velocity & acceleration gradients present</li>
+        <li>Adaptive scaling with clipping — not quadratic</li>
+        <li>Convexity cannot be guaranteed</li>
+        <li>Standard quadratic form cannot be written</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Why Not ADMM?</h2>
+      <h3>Designed for Different Problems</h3>
+      <ul>
+        <li>ADMM targets large-scale convex problems</li>
+        <li>Requires separable problem structure</li>
+        <li>Our problem has only 4 variables — no benefit</li>
+        <li>Single nonlinear objective, not separable</li>
+        <li>Would add unnecessary complexity</li>
+        <li>No computational advantage here</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Row 3: FFT pipeline + stats -->
+  <div class="row row-5">
+    <div class="card">
+      <h2>FFT Vibration Measurement</h2>
+      <h3>Analysis Pipeline</h3>
+      <div class="pipeline">
+        <div class="pipe-step"><span class="pipe-num">1</span>Collect accelerometer readings at 0.04 s interval</div>
+        <div class="pipe-step"><span class="pipe-num">2</span>Remove DC component — subtract mean per axis</div>
+        <div class="pipe-step"><span class="pipe-num">3</span>Compute FFT separately for X, Y, Z axes</div>
+        <div class="pipe-step"><span class="pipe-num">4</span>Square magnitudes, normalize by sample count N</div>
+        <div class="pipe-step"><span class="pipe-num">5</span>Sum positive-frequency energy in 4–7 Hz band</div>
+        <div class="pipe-step"><span class="pipe-num">6</span>Store result for both normal IK and optimized run</div>
+      </div>
+      <div class="tags">
+        <span class="tag">3-axis</span>
+        <span class="tag">4–7 Hz band</span>
+        <span class="tag">Positive freqs only</span>
+        <span class="tag">DC removed</span>
+      </div>
+    </div>
+
+    <div class="card stat">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Degrees of Freedom</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">5</div>
+      <div class="stat-label">Simplex Vertices (n+1)</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">4–7</div>
+      <div class="stat-label">Hz Target Vibration Band</div>
+    </div>
+    <div class="card stat">
+      <div class="stat-num">4</div>
+      <div class="stat-label">Test Cases Each (Sim + Hardware)</div>
+    </div>
+  </div>
+
+  <!-- Row 4: Results (clickable) -->
+  <div class="row" style="grid-template-columns: 1fr 1fr;">
+
+    <div class="card card-clickable" onclick="openImageModal('sim')" title="Click to view results chart">
+      <span class="view-badge">🔍 View Chart</span>
+      <h2>Simulated Results</h2>
+      <h3>Vibration Energy — Normal IK vs Optimized</h3>
+      <div class="results-grid">
+        <div class="result-case">
+          <div class="result-case-label">Test Case 1</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:88%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:34%"></div></div>
+          </div>
+        </div>
+        <div class="result-case">
+          <div class="result-case-label">Test Case 2</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:80%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:28%"></div></div>
+          </div>
+        </div>
+        <div class="result-case">
+          <div class="result-case-label">Test Case 3</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:92%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:40%"></div></div>
+          </div>
+        </div>
+        <div class="result-case">
+          <div class="result-case-label">Test Case 4</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:75%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:30%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="result-legend">
+        <div class="legend-dot"><span class="dot" style="background:#94a3b8"></span>Normal IK (baseline)</div>
+        <div class="legend-dot"><span class="dot" style="background:#3b82f6"></span>Optimized (Nelder–Mead + FFT)</div>
+      </div>
+    </div>
+
+    <div class="card card-clickable" onclick="openImageModal('hw')" title="Click to view results chart">
+      <span class="view-badge">🔍 View Chart</span>
+      <h2>Simulated Results</h2>
+      <h3>Simulated Validation — 4–7 Hz Band Energy</h3>
+      <div class="results-grid">
+        <div class="result-case">
+          <div class="result-case-label">Test Case 1</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:85%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:38%"></div></div>
+          </div>
+        </div>
+        <div class="result-case">
+          <div class="result-case-label">Test Case 2</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:78%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:32%"></div></div>
+          </div>
+        </div>
+        <div class="result-case">
+          <div class="result-case-label">Test Case 3</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:90%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:45%"></div></div>
+          </div>
+        </div>
+        <div class="result-case">
+          <div class="result-case-label">Test Case 4</div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Normal IK</span><span>High</span></div>
+            <div class="bar-track"><div class="bar-fill bar-ik" style="width:72%"></div></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta"><span>Optimized</span><span>Low</span></div>
+            <div class="bar-track"><div class="bar-fill bar-opt" style="width:35%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="result-legend">
+        <div class="legend-dot"><span class="dot" style="background:#94a3b8"></span>Normal IK (baseline)</div>
+        <div class="legend-dot"><span class="dot" style="background:#3b82f6"></span>Optimized (Nelder–Mead + FFT)</div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ══════════════ VIDEO MODAL ══════════════ -->
+  <div class="modal-overlay" id="videoModal" onclick="handleOverlayClick(event, 'videoModal')">
+    <div class="modal-card" style="max-width: 1100px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          ▶ Simulation Playback
+          <span class="modal-title-badge">4-DOF Manipulator</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('videoModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <!-- Video 1: Baseline -->
+          <div>
+            <div class="video-container">
+              <video controls autoplay loop style="width:100%;height:100%;object-fit:contain;">
+                <source src="Video.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+          <!-- Video 2: Optimized -->
+          <div>
+            <div class="video-container">
+              <video controls autoplay loop style="width:100%;height:100%;object-fit:contain;">
+                <source src="Video2.mp4" type="video/mp4">
+              </video>
+            </div>
+          </div>
+        </div>
+        <div class="video-meta" style="margin-top:0.9rem;">
+          <span class="video-meta-tag">🔧 4-DOF Robotic Arm</span>
+          <span class="video-meta-tag">〜 FFT Vibration Shaping</span>
+          <span class="video-meta-tag">📐 Nelder–Mead Optimization</span>
+          <span class="video-meta-tag">⚡ Energy Reduction Demo</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════ IMAGE MODAL – SIMULATED ══════════════ -->
+  <div class="modal-overlay" id="simModal" onclick="handleOverlayClick(event, 'simModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          📊 Simulated Results
+          <span class="modal-title-badge">Vibration Energy</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('simModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="image-container">
+          <div class="image-placeholder">
+            <img src="2.png" alt="Simulated Results Chart" />   
+          </div>
+        </div>
+        <div class="modal-stats">
+          <div class="modal-stat"><div class="modal-stat-val">~61%</div><div class="modal-stat-lbl">Avg. Reduction TC1</div></div>
+          <div class="modal-stat"><div class="modal-stat-val">~65%</div><div class="modal-stat-lbl">Avg. Reduction TC2</div></div>
+          <div class="modal-stat"><div class="modal-stat-val">~57%</div><div class="modal-stat-lbl">Avg. Reduction TC3</div></div>
+          <div class="modal-stat"><div class="modal-stat-val">~60%</div><div class="modal-stat-lbl">Avg. Reduction TC4</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════ IMAGE MODAL – HARDWARE ══════════════ -->
+  <div class="modal-overlay" id="hwModal" onclick="handleOverlayClick(event, 'hwModal')">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          🔬 Hardware Validation Results
+          <span class="modal-title-badge">4–7 Hz Band Energy</span>
+        </div>
+        <button class="modal-close" onclick="closeModal('hwModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="image-container">
+          <div class="image-placeholder">
+            <img src="1.png" alt="Simulated Results Chart" />   
+          </div>
+        </div>
+        <div class="modal-stats">
+          <div class="modal-stat"><div class="modal-stat-val">~55%</div><div class="modal-stat-lbl">Avg. Reduction TC1</div></div>
+          <div class="modal-stat"><div class="modal-stat-val">~59%</div><div class="modal-stat-lbl">Avg. Reduction TC2</div></div>
+          <div class="modal-stat"><div class="modal-stat-val">~50%</div><div class="modal-stat-lbl">Avg. Reduction TC3</div></div>
+          <div class="modal-stat"><div class="modal-stat-val">~51%</div><div class="modal-stat-lbl">Avg. Reduction TC4</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    function openVideoModal() {
+      document.getElementById('videoModal').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function openImageModal(type) {
+      const id = type === 'sim' ? 'simModal' : 'hwModal';
+      document.getElementById(id).classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      document.body.style.overflow = '';
+      // Pause any playing video
+      const video = document.querySelector(`#${id} video`);
+      if (video) video.pause();
+    }
+
+    function handleOverlayClick(e, id) {
+      if (e.target === document.getElementById(id)) closeModal(id);
+    }
+
+    // Escape key closes any open modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        ['videoModal', 'simModal', 'hwModal'].forEach(closeModal);
+      }
+    });
+  </script>
+
+</body>
+</html>
